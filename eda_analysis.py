@@ -8,13 +8,13 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
-from statsmodels.stats.multicomp import pairwise_tukeyhsd
+
 
 
 def load_and_profile(filepath):
     """Load the dataset and generate a data profile report."""
     df = pd.read_csv(filepath)
-    print(f"✅ Dataset loaded: {df.shape[0]:,} rows, {df.shape[1]} columns")
+    print(f" Dataset loaded: {df.shape[0]:,} rows, {df.shape[1]} columns")
     
     os.makedirs("output", exist_ok=True)
     
@@ -52,7 +52,7 @@ def load_and_profile(filepath):
     print("\n=== Missing Values Before Cleaning ===")
     print(missing_table[missing_table['Count'] > 0])
     
-    print(f"\n✅ Cleaning completed:")
+    print(f"\n Cleaning completed:")
     print(f"   • commute_minutes → imputed with median = {median_commute:.1f} minutes")
     print(f"   • scholarship → filled with 'None'")
     print(f"   • Final shape: {df.shape[0]} rows")
@@ -96,7 +96,7 @@ def plot_distributions(df):
     plt.savefig('output/gpa_by_department_box.png', dpi=300, bbox_inches='tight')
     plt.close()
 
-    print("✅ Task 2 Completed! Distribution plots saved.")
+    print(" Task 2 Completed! Distribution plots saved.")
 
 
 def plot_correlations(df):
@@ -123,7 +123,7 @@ def plot_correlations(df):
 
 
 def run_hypothesis_tests(df):
-    """Run hypothesis tests + Tier 1 ANOVA (without statsmodels dependency for CI)"""
+    """Run hypothesis tests + Tier 1 ANOVA (without external dependency)"""
     print("\n🔬 Starting Task 4 + Tier 1: Hypothesis Testing...")
 
     # Hypothesis 1: Internship vs GPA (t-test)
@@ -135,18 +135,18 @@ def run_hypothesis_tests(df):
     if p_val < 0.05:
         print("✅ Significant: Students with internships have higher GPA.")
 
-    # Tier 1: ANOVA for GPA across departments (using scipy only)
-    print("\n🔬 Tier 1: ANOVA - Does GPA differ across departments?")
+    # Tier 1: ANOVA - GPA across departments (using scipy only)
+    print("\n🔬 Tier 1: ANOVA - Does average GPA differ across departments?")
     groups = [df[df['department'] == dept]['gpa'].dropna() for dept in df['department'].unique()]
     f_stat, p_val_anova = stats.f_oneway(*groups)
     
     print(f"ANOVA: F-statistic = {f_stat:.4f}, p-value = {p_val_anova:.6f}")
     if p_val_anova < 0.05:
-        print("✅ Significant difference in GPA between departments.")
+        print("✅ Significant difference found between departments.")
     else:
-        print("No significant difference.")
+        print("No significant difference found.")
 
-    # Violin Plot (Tier 1)
+    # Violin Plot for Tier 1
     plt.figure(figsize=(12, 7))
     sns.violinplot(data=df, x='department', y='gpa', inner="quartile", palette="muted")
     sns.boxplot(data=df, x='department', y='gpa', width=0.25, color="white")
@@ -156,8 +156,7 @@ def run_hypothesis_tests(df):
     plt.close()
     print("✅ Tier 1 Violin plot saved.")
 
-    print("\n✅ Task 4 + Tier 1 Completed!")
-
+    print("\n Task 4 + Tier 1 Completed!")
     return {}
 
 def main():
