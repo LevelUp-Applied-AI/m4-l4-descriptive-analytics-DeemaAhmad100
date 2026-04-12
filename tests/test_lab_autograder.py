@@ -1,10 +1,6 @@
 import subprocess
 import sys
 from pathlib import Path
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy import stats
-from statsmodels.stats.multicomp import pairwise_tukeyhsd
 
 def test_analysis_script_exists():
     assert Path("eda_analysis.py").exists(), "eda_analysis.py not found"

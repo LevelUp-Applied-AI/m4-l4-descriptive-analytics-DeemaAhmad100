@@ -21,10 +21,7 @@ def generate_eda_report(df,
     """
     Generate a complete automated EDA report for any DataFrame.
     """
-    import os
-    import seaborn as sns
-    import numpy as np
-    from datetime import datetime
+   
 
     matplotlib.use('Agg')   # Force non-interactive backend
     sns.set_style(style)
