@@ -2,7 +2,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 def test_analysis_script_exists():
     assert Path("eda_analysis.py").exists(), "eda_analysis.py not found"
 

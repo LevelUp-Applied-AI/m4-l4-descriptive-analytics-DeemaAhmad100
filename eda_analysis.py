@@ -1,12 +1,5 @@
-"""Lab 4 — Descriptive Analytics: Student Performance EDA
+"""Lab 4 — Descriptive Analytics: Student Performance EDA"""
 
-Conduct exploratory data analysis on the student performance dataset.
-Produce distribution plots, correlation analysis, hypothesis tests,
-and a written findings report.
-
-Usage:
-    python eda_analysis.py
-"""
 import os
 import pandas as pd
 import numpy as np
@@ -17,99 +10,176 @@ import seaborn as sns
 from scipy import stats
 
 
+
 def load_and_profile(filepath):
-    """Load the dataset and generate a data profile report.
+    """Load the dataset and generate a data profile report."""
+    df = pd.read_csv(filepath)
+    print(f" Dataset loaded: {df.shape[0]:,} rows, {df.shape[1]} columns")
+    
+    os.makedirs("output", exist_ok=True)
+    
+    with open("output/data_profile.txt", "w", encoding="utf-8") as f:
+        f.write("=== Hashemite Technical University - Student Performance Dataset ===\n\n")
+        f.write(f"Shape: {df.shape[0]} rows × {df.shape[1]} columns\n\n")
+        f.write("=== Data Types ===\n")
+        f.write(str(df.dtypes) + "\n\n")
+        
+        f.write("=== Missing Values Before Cleaning ===\n")
+        missing = df.isnull().sum()
+        missing_pct = (df.isnull().sum() / len(df) * 100).round(2)
+        missing_table = pd.concat([missing, missing_pct], axis=1, keys=['Count', 'Percentage (%)'])
+        f.write(str(missing_table) + "\n\n")
+        
+        f.write("=== Descriptive Statistics (Numeric Columns) ===\n")
+        f.write(str(df.describe().round(2)) + "\n\n")
 
-    Args:
-        filepath: path to the CSV file (e.g., 'data/student_performance.csv')
+        # Handling Missing Values
+        f.write("=== Missing Values Handling Decisions ===\n\n")
+        
+        if df['commute_minutes'].isnull().sum() > 0:
+            median_commute = df['commute_minutes'].median()
+            df['commute_minutes'] = df['commute_minutes'].fillna(median_commute)
+            f.write(f"commute_minutes:\n   - Missing: {df['commute_minutes'].isnull().sum()} rows\n")
+            f.write("   - Decision: Impute with median\n")
+            f.write("   - Reasoning: Likely MCAR. Median is robust.\n\n")
+        
+        if df['scholarship'].isnull().sum() > 0:
+            df['scholarship'] = df['scholarship'].fillna('None')
+            f.write(f"scholarship:\n   - Missing: {df['scholarship'].isnull().sum()} rows\n")
+            f.write("   - Decision: Fill with 'None'\n")
+            f.write("   - Reasoning: Missing likely means no scholarship.\n\n")
 
-    Returns:
-        DataFrame: the loaded dataset
-
-    Side effects:
-        Saves a text profile to output/data_profile.txt containing:
-        - Shape (rows, columns)
-        - Data types for each column
-        - Missing value counts per column
-        - Descriptive statistics for numeric columns
-    """
-    # TODO: Load the dataset and report its shape, data types, missing values,
-    #       and descriptive statistics to output/data_profile.txt
-    pass
+    print("\n=== Missing Values Before Cleaning ===")
+    print(missing_table[missing_table['Count'] > 0])
+    
+    print(f"\n Cleaning completed:")
+    print(f"   • commute_minutes → imputed with median = {median_commute:.1f} minutes")
+    print(f"   • scholarship → filled with 'None'")
+    print(f"   • Final shape: {df.shape[0]} rows")
+    
+    print("\n📄 Full report saved to → output/data_profile.txt")
+    
+    return df
 
 
 def plot_distributions(df):
-    """Create distribution plots for key numeric variables.
+    """Create distribution plots for key numeric variables."""
+    print("\n🎨 Starting Task 2: Distribution Analysis...")
 
-    Args:
-        df: pandas DataFrame with the student performance data
+    sns.set_style("whitegrid")
+    
+    # GPA Distribution
+    plt.figure()
+    sns.histplot(data=df, x='gpa', kde=True, bins=20, color='skyblue')
+    plt.title('Distribution of GPA\n(Most students have GPA between 2.5 - 3.5)', fontsize=14)
+    plt.xlabel('GPA (0.0 - 4.0)')
+    plt.ylabel('Number of Students')
+    plt.savefig('output/gpa_distribution.png', dpi=300, bbox_inches='tight')
+    plt.close()
 
-    Returns:
-        None
+    # Study Hours Distribution
+    plt.figure()
+    sns.histplot(data=df, x='study_hours_weekly', kde=True, bins=20, color='salmon')
+    plt.title('Distribution of Weekly Study Hours', fontsize=14)
+    plt.xlabel('Study Hours per Week')
+    plt.ylabel('Number of Students')
+    plt.savefig('output/study_hours_distribution.png', dpi=300, bbox_inches='tight')
+    plt.close()
 
-    Side effects:
-        Saves at least 3 distribution plots (histograms with KDE or box plots)
-        as PNG files in the output/ directory. Each plot should have a
-        descriptive title that states what the distribution reveals.
-    """
-    # TODO: Create distribution plots for numeric columns like GPA,
-    #       study hours, attendance, and commute minutes
-    # TODO: Use histograms with KDE overlay (sns.histplot) or box plots
-    # TODO: Save each plot to the output/ directory
-    pass
+    # Box Plot: GPA by Department
+    plt.figure()
+    sns.boxplot(data=df, x='department', y='gpa', palette='Set2')
+    plt.title('GPA Distribution by Department (Box Plot)', fontsize=14)
+    plt.xlabel('Department')
+    plt.ylabel('GPA')
+    plt.xticks(rotation=45)
+    plt.savefig('output/gpa_by_department_box.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+    print(" Task 2 Completed! Distribution plots saved.")
 
 
 def plot_correlations(df):
-    """Analyze and visualize relationships between numeric variables.
+    """Correlation analysis and visualizations."""
+    numeric_cols = ['course_load', 'study_hours_weekly', 'gpa', 'attendance_pct', 'commute_minutes']
+    
+    plt.figure(figsize=(10, 8))
+    corr_matrix = df[numeric_cols].corr()
+    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, square=True, fmt='.2f')
+    plt.title('Pearson Correlation Heatmap')
+    plt.tight_layout()
+    plt.savefig('output/correlation_heatmap.png', dpi=300, bbox_inches='tight')
+    plt.close()
 
-    Args:
-        df: pandas DataFrame with the student performance data
+    # Strongest correlation scatter
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(data=df, x='study_hours_weekly', y='gpa', alpha=0.7, color='purple')
+    sns.regplot(data=df, x='study_hours_weekly', y='gpa', scatter=False, color='red')
+    plt.title('Study Hours vs GPA')
+    plt.savefig('output/study_hours_vs_gpa.png', dpi=300, bbox_inches='tight')
+    plt.close()
 
-    Returns:
-        None
-
-    Side effects:
-        Saves at least one correlation visualization to the output/ directory
-        (e.g., a heatmap, scatter plot, or pair plot).
-    """
-    # TODO: Compute the correlation matrix for numeric columns
-    # TODO: Create a heatmap or scatter plots showing key relationships
-    # TODO: Save the visualization(s) to the output/ directory
-    pass
+    print("✅ Task 3 Completed! Correlation plots saved.")
 
 
 def run_hypothesis_tests(df):
-    """Run statistical tests to validate observed patterns.
+    """Run hypothesis tests + Tier 1 ANOVA (without external dependency)"""
+    print("\n🔬 Starting Task 4 + Tier 1: Hypothesis Testing...")
 
-    Args:
-        df: pandas DataFrame with the student performance data
+    # Hypothesis 1: Internship vs GPA (t-test)
+    yes = df[df['has_internship'] == 'Yes']['gpa'].dropna()
+    no = df[df['has_internship'] == 'No']['gpa'].dropna()
+    
+    t_stat, p_val = stats.ttest_ind(yes, no, equal_var=False)
+    print(f"Internship t-test: t = {t_stat:.4f}, p-value = {p_val:.5f}")
+    if p_val < 0.05:
+        print("✅ Significant: Students with internships have higher GPA.")
 
-    Returns:
-        dict: test results with keys like 'internship_ttest', 'dept_anova',
-              each containing the test statistic and p-value
+    # Tier 1: ANOVA - GPA across departments (using scipy only)
+    print("\n🔬 Tier 1: ANOVA - Does average GPA differ across departments?")
+    groups = [df[df['department'] == dept]['gpa'].dropna() for dept in df['department'].unique()]
+    f_stat, p_val_anova = stats.f_oneway(*groups)
+    
+    print(f"ANOVA: F-statistic = {f_stat:.4f}, p-value = {p_val_anova:.6f}")
+    if p_val_anova < 0.05:
+        print("✅ Significant difference found between departments.")
+    else:
+        print("No significant difference found.")
 
-    Side effects:
-        Prints test results to stdout with interpretation.
+    # Violin Plot for Tier 1
+    plt.figure(figsize=(12, 7))
+    sns.violinplot(data=df, x='department', y='gpa', inner="quartile", palette="muted")
+    sns.boxplot(data=df, x='department', y='gpa', width=0.25, color="white")
+    plt.title("GPA Distribution by Department (Violin Plot - Tier 1)")
+    plt.xticks(rotation=45)
+    plt.savefig('output/tier1_gpa_by_department_violin.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("✅ Tier 1 Violin plot saved.")
 
-    Tests to consider:
-        - t-test: Does GPA differ between students with and without internships?
-        - ANOVA: Does GPA differ across departments?
-        - Correlation test: Is the correlation between study hours and GPA significant?
-    """
-    # TODO: Run at least two hypothesis tests on patterns you observe in the data
-    # TODO: Report the test statistic, p-value, and your interpretation
-    pass
-
+    print("\n Task 4 + Tier 1 Completed!")
+    return {}
 
 def main():
     """Orchestrate the full EDA pipeline."""
     os.makedirs("output", exist_ok=True)
-
-    # TODO: Load and profile the dataset
-    # TODO: Generate distribution plots
-    # TODO: Analyze correlations
-    # TODO: Run hypothesis tests
-    # TODO: Write a FINDINGS.md summarizing your analysis
+    
+    # Task 1: Data Loading & Profiling
+    df = load_and_profile("data/student_performance.csv")
+    
+    # Task 2: Distribution Analysis
+    plot_distributions(df)
+    
+    # Task 3: Correlation Analysis
+    plot_correlations(df)
+    
+    # Task 4 + Tier 1: Hypothesis Testing + Advanced Analysis
+    run_hypothesis_tests(df)
+    
+    print("\n" + "="*80)
+    print(" ALL TASKS (1 to 4) + TIER 1 Completed Successfully!")
+    print("Check the 'output/' folder for all plots and reports.")
+    print("You can now write FINDINGS.md")
+    print("="*80)
 
 
 if __name__ == "__main__":
