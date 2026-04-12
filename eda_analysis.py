@@ -160,16 +160,24 @@ def run_hypothesis_tests(df):
     return {}
 
 def main():
+    """Orchestrate the full EDA pipeline."""
     os.makedirs("output", exist_ok=True)
     
+    # Task 1: Data Loading & Profiling
     df = load_and_profile("data/student_performance.csv")
     
+    # Task 2: Distribution Analysis
     plot_distributions(df)
+    
+    # Task 3: Correlation Analysis
     plot_correlations(df)
+    
+    # Task 4 + Tier 1: Hypothesis Testing + Advanced Analysis
     run_hypothesis_tests(df)
-
+    
     print("\n" + "="*80)
-    print("ALL TASKS + Tier 1 Completed Successfully!")
+    print("🎉 ALL TASKS (1 to 4) + TIER 1 Completed Successfully!")
+    print("Check the 'output/' folder for all plots and reports.")
     print("You can now write FINDINGS.md")
     print("="*80)
 
