@@ -157,6 +157,7 @@ def run_hypothesis_tests(df):
     print("✅ Tier 1 Violin plot saved.")
 
     print("\n✅ Task 4 + Tier 1 Completed!")
+
     return {}
 
 def main():
@@ -176,7 +177,7 @@ def main():
     run_hypothesis_tests(df)
     
     print("\n" + "="*80)
-    print("🎉 ALL TASKS (1 to 4) + TIER 1 Completed Successfully!")
+    print(" ALL TASKS (1 to 4) + TIER 1 Completed Successfully!")
     print("Check the 'output/' folder for all plots and reports.")
     print("You can now write FINDINGS.md")
     print("="*80)
